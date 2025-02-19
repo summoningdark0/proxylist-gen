@@ -1,0 +1,56 @@
+-draw "line 732,0 732,3508" 
+
+
+\ -draw "line 1464,0 1464,3508" \ -draw "line 0,1039 2480,1039" \ -draw "line 0,2078 2480,2078"
+
+-draw "line 142,10 142,185"
+
+2338,3342 2338,3450" 
+
+magick tile-0.jpg -extent 2480x3508-142-195 -strokewidth 2 -stroke black 
+
+#top
+-draw "line 142,30 142,165" 
+
+-draw "line 874,30 874,165" 
+
+-draw "line 1606,30 1606,165" 
+
+-draw "line 2338,30 2338,165" 
+
+bottom
+
+-draw "line 142,3342 142,3450" 
+
+-draw "line 874,3342 874,3450" 
+
+-draw "line 1606,3342 1606,3450" 
+
+-draw "line 2338,3342 2338,3450" 
+
+test.jpg && open test.jpg
+-----
+
+284
+390
+
+195
+1234
+2273
+3312
+
+
+Vertical  Top
+Y starts at 10, ends in 185
+142 
+874
+1606
+2338
+
+Vertical  Bottom
+Y Starts at 3322, ends 3360
+
+142 
+874
+1606
+2338
