@@ -1,76 +1,86 @@
-#!/opt/local/bin/bash
+#!bin/bash
 
-directory="./proxy"
+
+#script uses imagemagick
+# not tested with png
+#not tested with cmyk
+
+# . is a current directory
+# change it to whatever you need
+directory="."
 imageArray=("$directory"/*.jpg)
 imageCount=${#imageArray[@]}
-declare -i cardX=731
-declare -i cardY=1037
+cardX=731
+cardY=1037
+length=80
+padding=20
+marginLeft=143
+marginRight=143	
+marginTop=198
+marginBottom=198
 
 
 
 processImage () {
-	magick $1 -gravity center -background `magick $1 -adaptive-resize 1x1 txt:- | tail -1 | cut -b 27-60` -resize 732x1040 -extent 732x1040 -
+	magick $1 -gravity center -background "$(magick $1 -adaptive-resize 1x1 txt:- | grep -o "#[0-9A-Fa-f]\{6\}")" -resize ${cardX}x${cardY} -extent ${cardX}x${cardY} -
 }
 
 passNumber=0
-for ((i = 0; i < imageCount; i += 9)) do
-	imageLeft = $((imageCount - i))
-	imageMontage = $((imageLeft > 9 ? 9 : imageLeft))
 
-	imageBuild = ()
-	for ((j = 0; j < imageMontage; j++)); do
-		index = $((i + j))
+
+for ((i = 0; i < imageCount; i += 9)) do
+	imageLeft=$((imageCount - i))
+	imageMontage=$((imageLeft > 9 ? 9 : imageLeft))
+
+	imageBuild=()
+	for ((j=0; j<imageMontage; j++)); do
+		index=$((i + j))
 		imageBuild+=("<(processImage \"${imageArray[$index]}\")")
 	done
 
+	# builds a temp
 	tempBuild="temp_pass_${passNumber}.jpg"
+	eval montage "${imageBuild[@]}" -tile 3x3 -geometry +0+0 "${tempBuild}"
+	
+    
+	#left margin + canvas + spacing between canvas
+	#this is the starting left x that is fixed for all left 
+	leftStart=$((marginLeft - (length + padding))) 
 
+	#starting top y, same 
+	topStart=$((marginTop - (length + padding)))
 
+	#srarting right x, same
+	rightStart=$((marginRight + cardX*3 + padding))
 
+	#starting bottom y, same
+	bottomStart=$((marginTop + cardY*3 + padding))
+	
+	drawLines=()
+	#left
+	for ((k=0; k<4; k++)); do
+ 			drawLines+=("-draw \"line $leftStart,$((marginTop+cardY*k)) $((leftStart+length)),$((marginTop+cardY*k))\"")
+ 	done
+
+ 	#right
+ 	for ((k=0; k<4; k++)); do
+ 			drawLines+=("-draw \"line $rightStart,$((marginTop+cardY*k)) $((rightStart+length)),$((marginTop+cardY*k))\"")
+ 	done
+
+ 	#top 
+ 	for ((k=0; k<4; k++)); do
+ 			drawLines+=("-draw \"line $((marginLeft+cardX*k)),$topStart $((marginLeft+cardX*k)),$((topStart+length))\"")
+ 	done
+
+ 	#top 
+ 	for ((k=0; k<4; k++)); do
+ 			drawLines+=("-draw \"line $((marginLeft+cardX*k)),$bottomStart $((marginLeft+cardX*k)),$((bottomStart+length))\"")
+ 	done
+	
+
+	eval magick "${tempBuild}" -extent 2480x3508-"${marginLeft}"-"${marginTop}" -strokewidth 2 -stroke black "${drawLines[@]}" "Page_${passNumber}.jpg"
+	rm $tempBuild
 	((passNumber++))
 done
-
-
-
-convert image.png -background `convert image.png ` 
-
-
-#identify image at ENLIB/30130.jpg
-magick identify ENLIB/30130.jpg
-
-#extract dimensions, third space of output
-magick identify ENLIB/30130.jpg | awk '{print $3}'
-
-#extract line contents after first field
-awk '{print $(NF>1)}' progfile.txt
-
-#card dimensions for 300dpi print 
-#62x88
-732x1040
-
-#a4 dimensions 300dpi
-2480x3508
-
-#collect proxy lists without borders and marks
-magick montage 0[01][1-7].jpg -geometry 732x1039>+0+0 -tile 3x3 +adjoin tile.jpg magick montage 0[01][1-7].jpg -geometry 732x1039>+0+0 -tile 3x3 +adjoin tile.jpg
-
-#compare 2 cards side by side, needs to have the same file name 
-magick montage $folder1/$filename $folder2/$filename -geometry 732x1039>+0+0 -tile 2x1 +adjoin E34[01][0-9][0-9].jpg
-
-#montage takes input and runs "-tile 3x3 +adjoin miff:-", :- passes data without saving to disk
-#next command takes "-" as input
- magick test.jpg -adaptive-resize 1x1 txt:- | tail -1 | cut -b 27-60
-#so the logic is:
-#feed an image folder
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
 
 
