@@ -11,6 +11,10 @@ The script will output the result in the directory it is in.
 
 Tested on MacOS only (so far) 
 
+
+---
+
+
 Как пользоваться: 
 Для работы скрипта нужен imagemagick: https://imagemagick.org/
 
