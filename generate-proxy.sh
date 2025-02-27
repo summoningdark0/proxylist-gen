@@ -1,14 +1,5 @@
-#!/opt/local/bin/bash
+#!/bin/bash
 
-
-#script uses imagemagick
-# not tested with png
-#not tested with cmyk
-
-# . is a current directory
-# change it to whatever you need
-
-# printf "\e[1;91;40mStage 1\e[0m\n"
 
 if [ -n "$1" ]; then
 	directory=$(realpath "$1")
@@ -31,8 +22,6 @@ else
     printf "\e[1;92;40mDefaulting to current directory: %s\e[0m\n" "$directory"
 fi
 
-
-
 outputDirectory="./print-files"
 mkdir -p "$outputDirectory"
 
@@ -47,13 +36,6 @@ if [ -e "${pngFiles[0]}" ] || [ "${pngFiles[0]}" != "$directory/*.png" ]; then
   imageArray+=("${pngFiles[@]}")
 fi
 
-unset jpgFiles
-unset pngFiles
-
-
-# imageArray=("$directory"/*.jpg "$directory"/*.png)
-
-
 imageCount=${#imageArray[@]}
 cardX=731
 cardY=1037
@@ -63,22 +45,14 @@ marginLeft=143
 marginRight=143	
 marginTop=198
 marginBottom=198
-
-# printf "\e[1;91;40mStage 2\e[0m\n"
+date="$(date "+%H%M")"
 
 processImage () {
 	cardBGColor=$(magick "$1" -adaptive-resize 1x1 txt:- | grep -o "#[0-9A-Fa-f]\{6\}")
 	magick "$1" -gravity center -background ${cardBGColor} -resize ${cardX}x${cardY} -extent ${cardX}x${cardY} -
 }
-# printf "\e[1;91;40mStage 3\e[0m\n"
 
-
-#"/Users/summoningdark/Documents/Netrunner/cards/proxy generator/proxylist-gen/ENLIB/30119.jpg"
-
-# magick "/Users/summoningdark/Documents/Netrunner/cards/proxy generator/proxylist-gen/ENLIB/30119.jpg" -gravity center -background "$(magick \"/Users/summoningdark/Documents/Netrunner/cards/proxy generator/proxylist-gen/ENLIB/30119.jpg\" -adaptive-resize 1x1 txt:- | grep -o "#[0-9A-Fa-f]\{6\}")" -resize ${cardX}x${cardY} -extent ${cardX}x${cardY} -
-date="$(date "+%H%M")"
 passNumber=0
-# printf "\e[1;91;40mStage 4\e[0m\n"
 
 for ((i = 0; i < imageCount; i += 9)) do
 	imageLeft=$((imageCount - i))
@@ -90,46 +64,28 @@ for ((i = 0; i < imageCount; i += 9)) do
 		imageBuild+=("<(processImage \"${imageArray[$index]}\")")
 	done
 
-	# builds a temp
-
 	tempBuild="temp_pass_${passNumber}.jpg"
-#error
-	#printf "${imageBuild[1]}\nAAAA\n"
-	#printf "${tempBuild}\n"
+
 	printf "\e[1mBuilding page %s…\e[0m\n" "$passNumber"
 	eval montage "${imageBuild[@]}" -tile 3x3 -geometry +0+0 "${tempBuild}"
-
-    
-	#left margin + canvas + spacing between canvas
-	#this is the starting left x that is fixed for all left 
 	leftStart=$((marginLeft - (length + padding))) 
-
-	#starting top y, same 
 	topStart=$((marginTop - (length + padding)))
-
-	#srarting right x, same
 	rightStart=$((marginRight + cardX*3 + padding))
-
-	#starting bottom y, same
 	bottomStart=$((marginTop + cardY*3 + padding))
 	
 	drawLines=()
-	#left
 	for ((k=0; k<4; k++)); do
  			drawLines+=("-draw \"line $leftStart,$((marginTop+cardY*k)) $((leftStart+length)),$((marginTop+cardY*k))\"")
  	done
 
- 	#right
  	for ((k=0; k<4; k++)); do
  			drawLines+=("-draw \"line $rightStart,$((marginTop+cardY*k)) $((rightStart+length)),$((marginTop+cardY*k))\"")
  	done
 
- 	#top 
  	for ((k=0; k<4; k++)); do
  			drawLines+=("-draw \"line $((marginLeft+cardX*k)),$topStart $((marginLeft+cardX*k)),$((topStart+length))\"")
  	done
 
- 	#top 
  	for ((k=0; k<4; k++)); do
  			drawLines+=("-draw \"line $((marginLeft+cardX*k)),$bottomStart $((marginLeft+cardX*k)),$((bottomStart+length))\"")
  	done
@@ -139,7 +95,6 @@ for ((i = 0; i < imageCount; i += 9)) do
 	rm $tempBuild
 	((passNumber++))
 done
-
 
 printf "\e[1;92;40mDone.\e[0m\n"
 
